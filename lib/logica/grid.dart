@@ -1,5 +1,7 @@
 import 'motor_2048.dart';
 
+import 'dart:math';
+
 class Grid {
   List<List<int?>> celdas;
 
@@ -35,5 +37,83 @@ class Grid {
     }
 
     return puntos;
+  }
+
+  List<List<int?>> _transponer(List<List<int?>> g) {
+    final n = g.length;
+
+    return List.generate(n, (i) => List.generate(n, (j) => g[j][i]));
+  }
+
+  int moverArriba() {
+    celdas = _transponer(celdas);
+
+    final puntos = moverIzquierda();
+
+    celdas = _transponer(celdas);
+
+    return puntos;
+  }
+
+  int moverAbajo() {
+    celdas = _transponer(celdas);
+
+    final puntos = moverDerecha();
+
+    celdas = _transponer(celdas);
+
+    return puntos;
+  }
+
+  void agregarFichaAleatoria({Random? aleatorio}) {
+    final rnd = aleatorio ?? Random();
+    final vacias = <List<int>>[];
+
+    for (var f = 0; f < celdas.length; f++) {
+      for (var c = 0; c < celdas[f].length; c++) {
+        if (celdas[f][c] == null) {
+          vacias.add([f, c]);
+        }
+      }
+    }
+
+    if (vacias.isEmpty) return;
+
+    final elegida = vacias[rnd.nextInt(vacias.length)];
+    final valor = rnd.nextDouble() < 0.9 ? 2 : 4;
+
+    celdas[elegida[0]][elegida[1]] = valor;
+  }
+
+  bool hayCeldasVacias() {
+    return celdas.expand((f) => f).any((v) => v == null);
+  }
+
+  bool hayMovimientosPosibles() {
+    if (hayCeldasVacias()) return true;
+
+    // Comprobar vecinos horizontales.
+    for (var f = 0; f < celdas.length; f++) {
+      for (var c = 0; c < celdas[f].length - 1; c++) {
+        if (celdas[f][c] == celdas[f][c + 1]) {
+          return true;
+        }
+      }
+    }
+
+    // Comprobar vecinos verticales.
+    for (var c = 0; c < celdas.length; c++) {
+      for (var f = 0; f < celdas.length - 1; f++) {
+        if (celdas[f][c] == celdas[f + 1][c]) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  bool haGanado(int objetivo) {
+    return celdas.expand((f) => f).any((v) => v != null && v >= objetivo);
   }
 }
